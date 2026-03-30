@@ -1,0 +1,80 @@
+.bottomNav {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 360px;
+  background-color: var(--surface-color);
+  border-radius: var(--radius-full);
+  padding: 12px 24px;
+  z-index: 50;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.navContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  transition: var(--transition-normal);
+  border-radius: var(--radius-full);
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.navItem:active .iconWrapper {
+  transform: scale(0.9);
+}
+
+.icon {
+  color: var(--text-secondary);
+}
+
+.iconActive {
+  color: var(--primary-color);
+}
+
+.active {
+  background: var(--surface-color-light);
+}
+
+/* The FAB style button for Quiz */
+.fabItem {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  background-color: var(--primary-color);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(46, 98, 255, 0.4);
+  color: white;
+  transition: transform var(--transition-fast);
+  z-index: 10;
+}
+
+.fabItem:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.fabIcon {
+  color: white;
+}

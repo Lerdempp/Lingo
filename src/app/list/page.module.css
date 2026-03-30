@@ -1,0 +1,132 @@
+.main {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.wordList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.wordCard {
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform var(--transition-fast);
+}
+
+.wordCard:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05); /* Slight highlight */
+}
+
+.wordInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.original {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.translation {
+  font-size: 0.875rem;
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+.example {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: 1rem;
+  font-size: 0.75rem;
+}
+
+.statCorrect {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.statWrong {
+  color: var(--error-color);
+  font-weight: 600;
+}
+
+.deleteBtn {
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 71, 111, 0.1);
+  color: var(--error-color);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyIcon {
+  color: var(--surface-color-light);
+}
+
+.browseBtn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-block;
+  transition: background var(--transition-fast);
+}
+
+.browseBtn:hover {
+  background: var(--primary-color-hover);
+}

@@ -1,0 +1,213 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px); /* minus bottom nav */
+}
+
+.header {
+  position: absolute;
+  top: 2rem;
+  left: 1.5rem;
+  text-align: left;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.progress {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.cardContainer {
+  width: 100%;
+  max-width: 400px;
+  height: 400px;
+  perspective: 1000px;
+  margin-bottom: 2rem;
+  margin-top: 4rem;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.isFlipped {
+  transform: rotateY(180deg);
+}
+
+.cardFace {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+}
+
+.cardFront {
+  background: var(--surface-color-light);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.cardBack {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  transform: rotateY(180deg);
+  box-shadow: 0 10px 30px rgba(123, 44, 191, 0.3);
+}
+
+.cardOriginal {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.cardTranslation {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  word-break: break-word;
+}
+
+.cardExample {
+  margin-top: 1.5rem;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.hint {
+  position: absolute;
+  bottom: 2rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.backHint {
+  position: absolute;
+  top: 2rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
+  animation: slideUpFade 0.4s ease forwards;
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  color: white;
+}
+
+.actionBtn:active {
+  transform: scale(0.95);
+}
+
+.wrongBtn {
+  background: var(--error-color);
+  box-shadow: 0 4px 15px rgba(239, 71, 111, 0.3);
+}
+
+.correctBtn {
+  background: var(--success-color);
+  box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyIcon {
+  color: var(--surface-color-light);
+  margin-bottom: 1rem;
+}
+
+.browseBtn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-block;
+  transition: background var(--transition-fast);
+}
+
+.completedState {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: slideUpFade 0.5s ease;
+}
+
+.trophyIcon {
+  color: #fb8500;
+  filter: drop-shadow(0 0 20px rgba(251, 133, 0, 0.5));
+  margin-bottom: 1rem;
+}
+
+.restartBtn {
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 1.125rem;
+  transition: transform var(--transition-fast);
+}
+
+.restartBtn:hover {
+  transform: translateY(-2px);
+}
