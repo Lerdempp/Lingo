@@ -13,15 +13,34 @@ import {
   GraduationCap,
   Sparkles,
   Type,
-  HelpCircle
+  HelpCircle,
+  Settings2,
+  Play
 } from "lucide-react";
 import Link from "next/link";
 import { Word } from "@/types";
+
+// Fisher-Yates shuffle
+function shuffle<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
 
 export default function Quiz() {
   const { words, updateWordStats, isLoaded } = useWords();
   const [mounted, setMounted] = useState(false);
   
+  // Setup State
+  const [isConfiguring, setIsConfiguring] = useState(true);
+  const [config, setConfig] = useState({
+    count: 10,
+    mode: "mixed" as "mixed" | "recent"
+  });
+
   const [questions, setQuestions] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   
@@ -39,30 +58,36 @@ export default function Quiz() {
     setMounted(true);
   }, []);
 
-  // Initialize quiz questions
-  useEffect(() => {
-    if (isLoaded && words.length >= 1 && questions.length === 0 && !isCompleted) {
-      const sortedByNeed = [...words].sort((a, b) => {
-        const scoreA = a.correctAnswers - a.wrongAnswers * 2;
-        const scoreB = b.correctAnswers - b.wrongAnswers * 2;
-        return scoreA - scoreB;
-      });
-      
-      const selectedWords = sortedByNeed.slice(0, 10);
-      setQuestions(selectedWords);
-    }
-  }, [isLoaded, words, questions.length, isCompleted]);
+  const startQuiz = () => {
+    let pool = [...words];
 
-  const currentWord = questions[currentIndex];
+    // Mode selection
+    if (config.mode === "recent") {
+      pool.sort((a, b) => b.createdAt - a.createdAt);
+    } else {
+      pool = shuffle(pool);
+    }
+
+    // Record count
+    const selected = pool.slice(0, config.count === -1 ? words.length : config.count);
+    
+    setQuestions(selected);
+    setIsConfiguring(false);
+    setCurrentIndex(0);
+    setUserInput("");
+    setScore(0);
+    setIsCompleted(false);
+    setStatus("typing");
+  };
 
   const handleCheck = useCallback(() => {
-    if (status !== "typing" || !currentWord) return;
+    if (status !== "typing" || questions.length === 0) return;
+    const currentWord = questions[currentIndex];
 
     const isCorrect = userInput.trim().toLocaleLowerCase("tr-TR") === currentWord.translation.toLocaleLowerCase("tr-TR");
 
     if (isCorrect) {
       setStatus("correct");
-      // Give full point if no hint, half point if hints used? Or just track it.
       setScore(prev => prev + 1);
     } else {
       setStatus("wrong");
@@ -81,9 +106,10 @@ export default function Quiz() {
         setIsCompleted(true);
       }
     }, 2000);
-  }, [status, currentWord, userInput, currentIndex, questions.length, updateWordStats]);
+  }, [status, questions, userInput, currentIndex, updateWordStats]);
 
   const handleHint = () => {
+    const currentWord = questions[currentIndex];
     if (!currentWord || status !== "typing") return;
     if (hintCount < currentWord.translation.length) {
       const nextChar = currentWord.translation[hintCount];
@@ -94,10 +120,10 @@ export default function Quiz() {
   };
 
   useEffect(() => {
-    if (mounted && !isCompleted && questions.length > 0) {
+    if (mounted && !isConfiguring && !isCompleted && questions.length > 0) {
       inputRef.current?.focus();
     }
-  }, [mounted, isCompleted, currentIndex, questions.length]);
+  }, [mounted, isConfiguring, isCompleted, currentIndex, questions.length]);
 
   if (!mounted || !isLoaded) {
     return <main className={styles.main}><div className="flex items-center justify-center h-full">Yükleniyor...</div></main>;
@@ -118,6 +144,70 @@ export default function Quiz() {
     );
   }
 
+  // Configuration Screen
+  if (isConfiguring) {
+    return (
+      <main className={styles.main}>
+        <header className={styles.header}>
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+              <ArrowLeft size={24} />
+            </Link>
+            <div className="flex items-center gap-2 bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Settings2 size={14} />
+              <span>Quiz Ayarları</span>
+            </div>
+          </div>
+          <h1 className={styles.title}>Quizi Hazırla</h1>
+        </header>
+
+        <div className={styles.questionSection}>
+          <div className={styles.setupCard}>
+            <div className={styles.configSection}>
+              <div className={styles.configGroup}>
+                <h3>Soru Sayısı</h3>
+                <div className={styles.optionGrid}>
+                  {[5, 10, 20, -1].map(n => (
+                    <button 
+                      key={n}
+                      className={`${styles.configOption} ${config.count === n ? styles.optionActive : ""}`}
+                      onClick={() => setConfig(prev => ({ ...prev, count: n }))}
+                    >
+                      {n === -1 ? "Hepsi" : `${n} Soru`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.configGroup}>
+                <h3>Soru Modu</h3>
+                <div className={styles.optionGrid}>
+                  <button 
+                    className={`${styles.configOption} ${config.mode === "mixed" ? styles.optionActive : ""}`}
+                    onClick={() => setConfig(prev => ({ ...prev, mode: "mixed" }))}
+                  >
+                    Karışık
+                  </button>
+                  <button 
+                    className={`${styles.configOption} ${config.mode === "recent" ? styles.optionActive : ""}`}
+                    onClick={() => setConfig(prev => ({ ...prev, mode: "recent" }))}
+                  >
+                    Son Eklenenler
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button className={styles.startBtn} onClick={startQuiz}>
+              <span>Quizi Başlat</span>
+              <Play size={20} fill="currentColor" />
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (isCompleted) {
     const accuracy = Math.round((score / questions.length) * 100);
     return (
@@ -125,7 +215,7 @@ export default function Quiz() {
         <div className={styles.centeredState}>
           <Trophy size={100} className={styles.stateIcon} />
           <h1 className={styles.completedTitle}>Bravo!</h1>
-          <p className={styles.completedText}>Yazma testini başarıyla tamamladın.</p>
+          <p className={styles.completedText}>Testi başarıyla tamamladın.</p>
           
           <div className={styles.statsRow}>
             <div className={styles.statItem}>
@@ -145,16 +235,9 @@ export default function Quiz() {
           <div className={styles.resultActions}>
             <button 
               className={styles.restartBtn}
-              onClick={() => {
-                setIsCompleted(false);
-                setQuestions([]);
-                setCurrentIndex(0);
-                setUserInput("");
-                setScore(0);
-                setStatus("typing");
-              }}
+              onClick={() => setIsConfiguring(true)}
             >
-              Tekrar Dene
+              Yeni Test Başlat
             </button>
             <Link href="/" className={styles.homeLink}>
               Ana Sayfaya Dön
@@ -165,6 +248,7 @@ export default function Quiz() {
     );
   }
 
+  const currentWord = questions[currentIndex];
   if (!currentWord) return null;
 
   const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -173,9 +257,9 @@ export default function Quiz() {
     <main className={styles.main}>
       <header className={styles.header}>
         <div className="flex items-center justify-between mb-4">
-          <Link href="/" className="text-gray-400 hover:text-white transition-colors">
+          <button onClick={() => setIsConfiguring(true)} className="text-gray-400 hover:text-white transition-colors">
             <ArrowLeft size={24} />
-          </Link>
+          </button>
           <div className="flex items-center gap-2 bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
             <Type size={14} />
             <span>Yazma Testi</span>
