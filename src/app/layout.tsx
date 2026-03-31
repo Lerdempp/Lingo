@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 import BottomNav from "@/components/BottomNav";
+import { Providers } from "@/components/Providers";
 
 export default function RootLayout({
   children,
@@ -22,9 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.variable}>
-        {children}
-        <BottomNav />
+        <Providers>
+          {children}
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   );
 }
+

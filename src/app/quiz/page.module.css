@@ -1,213 +1,258 @@
 .main {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 80px); /* minus bottom nav */
+  padding: 2rem 1.5rem;
+  background: var(--background-color);
+  overflow-x: hidden;
 }
 
 .header {
-  position: absolute;
-  top: 2rem;
-  left: 1.5rem;
-  text-align: left;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
 }
 
-.progress {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.cardContainer {
+.progressContainer {
   width: 100%;
-  max-width: 400px;
-  height: 400px;
-  perspective: 1000px;
-  margin-bottom: 2rem;
-  margin-top: 4rem;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 1rem;
 }
 
-.card {
-  width: 100%;
+.progressBar {
   height: 100%;
+  background: linear-gradient(90deg, #007AFF, #00C7BE);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progressText {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Question Area */
+.questionSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.wordCard {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 32px;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.cardGlow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 122, 255, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.originalWord {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+}
+
+.exampleText {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+/* Options Grid */
+.optionsGrid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.optionBtn {
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
 }
 
-.isFlipped {
-  transform: rotateY(180deg);
+.optionBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
 }
 
-.cardFace {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
+.optionBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.correctOption {
+  background: rgba(52, 199, 89, 0.1) !important;
+  border-color: #34C759 !important;
+  color: #34C759 !important;
+}
+
+.wrongOption {
+  background: rgba(255, 59, 48, 0.1) !important;
+  border-color: #FF3B30 !important;
+  color: #FF3B30 !important;
+}
+
+/* Completed & Empty States */
+.centeredState {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-lg);
-  padding: 2rem;
   text-align: center;
+  gap: 1.5rem;
+  padding-bottom: 5rem;
 }
 
-.cardFront {
-  background: var(--surface-color-light);
-  border: 1px solid var(--glass-border);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+.stateIcon {
+  color: var(--primary-color);
+  filter: drop-shadow(0 0 20px rgba(0, 122, 255, 0.3));
+  margin-bottom: 1rem;
 }
 
-.cardBack {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  transform: rotateY(180deg);
-  box-shadow: 0 10px 30px rgba(123, 44, 191, 0.3);
-}
-
-.cardOriginal {
-  font-size: 2.5rem;
+.completedTitle {
+  font-size: 2.25rem;
   font-weight: 800;
   color: var(--text-primary);
-  word-break: break-word;
 }
 
-.cardTranslation {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: white;
-  word-break: break-word;
-}
-
-.cardExample {
-  margin-top: 1.5rem;
-  font-size: 1.125rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-style: italic;
-  font-weight: 500;
-}
-
-.hint {
-  position: absolute;
-  bottom: 2rem;
-  font-size: 0.875rem;
+.completedText {
   color: var(--text-secondary);
-  animation: pulse 2s infinite ease-in-out;
-}
-
-.backHint {
-  position: absolute;
-  top: 2rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-@keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-  max-width: 400px;
-  animation: slideUpFade 0.4s ease forwards;
-}
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.actionBtn {
-  flex: 1;
-  padding: 1.25rem;
-  border-radius: var(--radius-md);
-  font-weight: 700;
   font-size: 1.125rem;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+.statsRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: transform var(--transition-fast), filter var(--transition-fast);
-  color: white;
+  gap: 2rem;
+  margin: 1rem 0 2rem 0;
 }
 
-.actionBtn:active {
-  transform: scale(0.95);
-}
-
-.wrongBtn {
-  background: var(--error-color);
-  box-shadow: 0 4px 15px rgba(239, 71, 111, 0.3);
-}
-
-.correctBtn {
-  background: var(--success-color);
-  box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);
-}
-
-.emptyState {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-secondary);
+.statItem {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
 }
 
-.emptyIcon {
-  color: var(--surface-color-light);
-  margin-bottom: 1rem;
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.browseBtn {
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.resultActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 280px;
+  align-items: center;
   margin-top: 1rem;
-  padding: 0.75rem 1.5rem;
+}
+
+.homeLink {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.homeLink:hover {
+  color: var(--text-primary);
+}
+
+.restartBtn, .browseBtn {
+  width: 100%;
+  padding: 1rem 2.5rem;
   background: var(--primary-color);
   color: white;
-  border-radius: var(--radius-md);
+  border-radius: 100px;
   font-weight: 600;
-  display: inline-block;
-  transition: background var(--transition-fast);
-}
-
-.completedState {
+  font-size: 1.0625rem;
+  box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  animation: slideUpFade 0.5s ease;
-}
-
-.trophyIcon {
-  color: #fb8500;
-  filter: drop-shadow(0 0 20px rgba(251, 133, 0, 0.5));
-  margin-bottom: 1rem;
-}
-
-.restartBtn {
-  margin-top: 1.5rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-  color: white;
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  font-size: 1.125rem;
-  transition: transform var(--transition-fast);
 }
 
 .restartBtn:hover {
   transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(0, 122, 255, 0.4);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .originalWord {
+    font-size: 2.25rem;
+  }
 }
