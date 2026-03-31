@@ -42,10 +42,11 @@ body {
   font-family: var(--font-inter), sans-serif;
   background-color: var(--bg-color);
   background-image: radial-gradient(circle at 50% 0%, var(--bg-glow) 0%, var(--bg-color) 60%);
-  background-attachment: fixed;
   background-repeat: no-repeat;
+  background-size: cover;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none; /* Prevent bouncy pull-to-refresh jumps */
 }
 
 a {
@@ -81,5 +82,5 @@ input, textarea {
   max-width: 600px;
   margin: 0 auto;
   padding-bottom: 120px; /* Space for the floating bottom nav */
-  min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic vh for mobile address bar stability */
 }
