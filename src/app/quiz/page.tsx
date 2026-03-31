@@ -15,7 +15,8 @@ import {
   Type,
   HelpCircle,
   Settings2,
-  Play
+  Play,
+  Hash
 } from "lucide-react";
 import Link from "next/link";
 import { Word } from "@/types";
@@ -40,6 +41,8 @@ export default function Quiz() {
     count: 10,
     mode: "mixed" as "mixed" | "recent"
   });
+  const [isCustom, setIsCustom] = useState(false);
+  const [customValue, setCustomValue] = useState("15");
 
   const [questions, setQuestions] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,6 +51,7 @@ export default function Quiz() {
   const [userInput, setUserInput] = useState("");
   const [hintCount, setHintCount] = useState(0);
   const [status, setStatus] = useState<"typing" | "correct" | "wrong">("typing");
+  const [hasErrorOnCurrent, setHasErrorOnCurrent] = useState(false);
   
   const [isCompleted, setIsCompleted] = useState(false);
   const [score, setScore] = useState(0);
@@ -61,15 +65,17 @@ export default function Quiz() {
   const startQuiz = () => {
     let pool = [...words];
 
-    // Mode selection
     if (config.mode === "recent") {
       pool.sort((a, b) => b.createdAt - a.createdAt);
     } else {
       pool = shuffle(pool);
     }
 
-    // Record count
-    const selected = pool.slice(0, config.count === -1 ? words.length : config.count);
+    let finalCount = config.count;
+    if (isCustom) finalCount = parseInt(customValue) || 10;
+    
+    const countLimit = finalCount === -1 ? words.length : Math.min(finalCount, words.length);
+    const selected = pool.slice(0, countLimit);
     
     setQuestions(selected);
     setIsConfiguring(false);
@@ -78,6 +84,7 @@ export default function Quiz() {
     setScore(0);
     setIsCompleted(false);
     setStatus("typing");
+    setHasErrorOnCurrent(false);
   };
 
   const handleCheck = useCallback(() => {
@@ -88,25 +95,35 @@ export default function Quiz() {
 
     if (isCorrect) {
       setStatus("correct");
-      setScore(prev => prev + 1);
+      if (!hasErrorOnCurrent) setScore(prev => prev + 1);
+      
+      // Update stats based on first attempt
+      updateWordStats(currentWord.id, !hasErrorOnCurrent);
+
+      // FAST transition for correct answers
+      setTimeout(() => {
+        if (currentIndex < questions.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+          setUserInput("");
+          setHintCount(0);
+          setStatus("typing");
+          setHasErrorOnCurrent(false);
+          inputRef.current?.focus();
+        } else {
+          setIsCompleted(true);
+        }
+      }, 700);
     } else {
       setStatus("wrong");
-    }
-
-    updateWordStats(currentWord.id, isCorrect);
-
-    setTimeout(() => {
-      if (currentIndex < questions.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-        setUserInput("");
-        setHintCount(0);
+      setHasErrorOnCurrent(true);
+      
+      // Let them retry immediately after the shake animation
+      setTimeout(() => {
         setStatus("typing");
         inputRef.current?.focus();
-      } else {
-        setIsCompleted(true);
-      }
-    }, 2000);
-  }, [status, questions, userInput, currentIndex, updateWordStats]);
+      }, 500);
+    }
+  }, [status, questions, userInput, currentIndex, hasErrorOnCurrent, updateWordStats]);
 
   const handleHint = () => {
     const currentWord = questions[currentIndex];
@@ -116,6 +133,7 @@ export default function Quiz() {
       setUserInput(prev => prev + nextChar);
       setHintCount(prev => prev + 1);
       inputRef.current?.focus();
+      setHasErrorOnCurrent(true); // Hinting counts as a partial help
     }
   };
 
@@ -144,7 +162,6 @@ export default function Quiz() {
     );
   }
 
-  // Configuration Screen
   if (isConfiguring) {
     return (
       <main className={styles.main}>
@@ -170,13 +187,42 @@ export default function Quiz() {
                   {[5, 10, 20, -1].map(n => (
                     <button 
                       key={n}
-                      className={`${styles.configOption} ${config.count === n ? styles.optionActive : ""}`}
-                      onClick={() => setConfig(prev => ({ ...prev, count: n }))}
+                      className={`${styles.configOption} ${!isCustom && config.count === n ? styles.optionActive : ""}`}
+                      onClick={() => {
+                        setIsCustom(false);
+                        setConfig(prev => ({ ...prev, count: n }));
+                      }}
                     >
                       {n === -1 ? "Hepsi" : `${n} Soru`}
                     </button>
                   ))}
+                  <button 
+                    className={`${styles.configOption} ${isCustom ? styles.optionActive : ""}`}
+                    onClick={() => setIsCustom(true)}
+                  >
+                    Özel
+                  </button>
                 </div>
+
+                {isCustom && (
+                  <div className={styles.customInputSection}>
+                    <div className={styles.countInputWrapper}>
+                      <input
+                        type="number"
+                        min="1"
+                        max={words.length}
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        className={styles.countInput}
+                        placeholder="Sayı girin..."
+                        autoFocus
+                      />
+                    </div>
+                    <span className={styles.inputLabel}>
+                      Max: {words.length} kelime
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className={styles.configGroup}>
@@ -292,9 +338,12 @@ export default function Quiz() {
               className={`${styles.typingInput} ${status === "correct" ? styles.correctInput : ""} ${status === "wrong" ? styles.wrongInput : ""}`}
               placeholder="Çeviriyi yazın..."
               value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
+              onChange={(e) => {
+                setUserInput(e.target.value);
+                if (status === "wrong") setStatus("typing"); // Clear error when typing
+              }}
               onKeyDown={(e) => e.key === "Enter" && handleCheck()}
-              disabled={status !== "typing"}
+              disabled={status === "correct"} // Only disable when it's already correct and moving next
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
@@ -307,7 +356,7 @@ export default function Quiz() {
             <button 
               className={styles.hintBtn}
               onClick={handleHint}
-              disabled={status !== "typing"}
+              disabled={status === "correct"}
             >
               <HelpCircle size={20} />
               <span>İpucu Al</span>
@@ -315,19 +364,13 @@ export default function Quiz() {
             <button 
               className={styles.checkBtn}
               onClick={handleCheck}
-              disabled={!userInput.trim() || status !== "typing"}
+              disabled={!userInput.trim() || status === "correct"}
               style={{ background: "linear-gradient(135deg, #A855F7, #EC4899)" }}
             >
               <span>Onayla</span>
               <Sparkles size={18} />
             </button>
           </div>
-          
-          {status === "wrong" && (
-            <div className={styles.correctAnswerLabel}>
-              Doğru Cevap: <strong>{currentWord.translation}</strong>
-            </div>
-          )}
         </div>
       </div>
     </main>
