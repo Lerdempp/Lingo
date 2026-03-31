@@ -1,33 +1,34 @@
 import { MongoClient } from "mongodb";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('Invalid/Missing environment variable: "DATABASE_URL"');
-}
-
-const uri = process.env.DATABASE_URL;
+const uri = process.env.DATABASE_URL || "";
 const options = {};
 
-let client;
+let client: MongoClient | undefined;
 let clientPromise: Promise<MongoClient>;
 
-if (process.env.NODE_ENV === "development") {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
-  };
-
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-  clientPromise = globalWithMongo._mongoClientPromise;
+if (!uri) {
+  // During build or if missing, provide a "pending" promise that won't crash the build
+  // but will throw a helpful error if it's actually used at runtime.
+  clientPromise = new Promise((_, reject) => {
+    if (process.env.NODE_ENV === "production" && typeof window === "undefined") {
+        console.warn('⚠️  DATABASE_URL is missing. DB operations will fail at runtime.');
+    }
+  });
 } else {
-  // In production mode, it's best to not use a global variable.
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  if (process.env.NODE_ENV === "development") {
+    let globalWithMongo = global as typeof globalThis & {
+      _mongoClientPromise?: Promise<MongoClient>;
+    };
+
+    if (!globalWithMongo._mongoClientPromise) {
+      client = new MongoClient(uri, options);
+      globalWithMongo._mongoClientPromise = client.connect();
+    }
+    clientPromise = globalWithMongo._mongoClientPromise;
+  } else {
+    client = new MongoClient(uri, options);
+    clientPromise = client.connect();
+  }
 }
 
-// Export a module-scoped MongoClient promise. By doing this in a
-// separate module, the client can be shared across functions.
 export default clientPromise;
