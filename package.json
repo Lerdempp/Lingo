@@ -12,7 +12,7 @@
     "@auth/mongodb-adapter": "^3.11.1",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^1.7.0",
-    "mongodb": "^7.1.1",
+    "mongodb": "^6.13.1",
     "next": "16.2.1",
     "next-auth": "^5.0.0-beta.30",
     "react": "19.2.4",
