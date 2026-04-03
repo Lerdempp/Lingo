@@ -1,7 +1,11 @@
 import { MongoClient } from "mongodb";
 
 const uri = process.env.DATABASE_URL || "";
-const options = {};
+const options = {
+  maxIdleTimeMS: 10000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
 
 let client: MongoClient | undefined;
 let clientPromise: Promise<MongoClient>;
