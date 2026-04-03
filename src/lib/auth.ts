@@ -5,8 +5,13 @@ import { z } from "zod";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "./mongodb";
 
+// Add debugging directly before NextAuth init
+console.log("NextAuth Initialization - Vercel Check:");
+console.log("Has AUTH_SECRET:", !!process.env.AUTH_SECRET);
+console.log("Has DATABASE_URL:", !!process.env.DATABASE_URL);
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || "vG6r/f9z9Y8n/L1P8T8h9S6Q7W5X3Z6Y1A2B3C4D5E6=",
   // adapter: MongoDBAdapter(clientPromise),
   providers: [
     Credentials({
