@@ -23,8 +23,12 @@ export function useProfile() {
 
   // Load accounts on mount
   useEffect(() => {
-    const saved = localStorage.getItem("lingo-accounts");
-    if (saved) setAccounts(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem("lingo-accounts");
+      if (saved) setAccounts(JSON.parse(saved));
+    } catch (e) {
+      console.error("Failed to read accounts from local storage", e);
+    }
   }, []);
 
   useEffect(() => {
@@ -33,7 +37,11 @@ export function useProfile() {
       if (!session) {
         const defaultProfile = { name: "Öğrenci", avatarUrl: "", email: "", phone: "" };
         setProfile(defaultProfile);
-        localStorage.removeItem("lingo-profile");
+        try {
+          localStorage.removeItem("lingo-profile");
+        } catch (e) {
+          console.error("Failed to remove profile from local storage", e);
+        }
         setIsLoaded(true);
         return;
       }
@@ -78,8 +86,12 @@ export function useProfile() {
             }
           }
         } else {
-          const saved = localStorage.getItem("lingo-profile");
-          if (saved) setProfile(JSON.parse(saved));
+          try {
+            const saved = localStorage.getItem("lingo-profile");
+            if (saved) setProfile(JSON.parse(saved));
+          } catch(e) {
+             console.error("Failed to read profile fallback from local storage", e);
+          }
         }
       } catch (e) {
         console.error("Failed to fetch remote profile", e);
@@ -121,6 +133,17 @@ export function useProfile() {
       }
     }
   };
+
+  // Safety net: don't let it hang on 'loading' forever if Auth.js gets stuck
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isLoaded) {
+        console.warn("useProfile: Safety timeout triggered.");
+        setIsLoaded(true);
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
 
   return { profile, updateProfile, isLoaded, accounts };
 }

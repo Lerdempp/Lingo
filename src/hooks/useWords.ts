@@ -51,16 +51,17 @@ export function useWords() {
           setIsLoaded(true);
         }
       } else {
-        // Not logged in: Load from local storage
-        const saved = localStorage.getItem("lingo-words");
-        if (saved) {
-          try {
+        // Not logged in: Load from local storage safely
+        try {
+          const saved = localStorage.getItem("lingo-words");
+          if (saved) {
             setWords(JSON.parse(saved));
-          } catch (e) {
-            console.error("Failed to parse words from local storage", e);
           }
+        } catch (e) {
+          console.error("Failed to read/parse words from local storage (possibly disabled/incognito)", e);
+        } finally {
+          setIsLoaded(true);
         }
-        setIsLoaded(true);
       }
     }
 
@@ -70,7 +71,11 @@ export function useWords() {
   // Save to local storage for guests
   useEffect(() => {
     if (isLoaded && !session) {
-      localStorage.setItem("lingo-words", JSON.stringify(words));
+      try {
+        localStorage.setItem("lingo-words", JSON.stringify(words));
+      } catch (e) {
+        console.error("Could not save to localStorage", e);
+      }
     }
   }, [words, isLoaded, session]);
 
@@ -141,6 +146,17 @@ export function useWords() {
       }
     }
   };
+
+  // Safety net: don't let it hang on 'loading' forever if Auth.js gets stuck
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isLoaded) {
+        console.warn("useWords: Safety timeout triggered. Auth.js might be stuck.");
+        setIsLoaded(true);
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
 
   return { words, addWord, removeWord, updateWordStats, isLoaded, isSyncing };
 }
